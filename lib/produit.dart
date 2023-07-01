@@ -1,6 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages, prefer_const_constructors
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:market/paiementpro.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:market/settings.dart';
@@ -78,7 +80,7 @@ class _ProductsPageState extends State<ProductsPage> {
     fetchProducts();
   }
 
-  static const String baseUrl = 'http://192.168.1.17:8000/api/produits';
+  static const String baseUrl = 'http://192.168.10.25:8000/api/produits';
 
   Future<void> fetchProducts() async {
     final response = await http.get(Uri.parse('$baseUrl'));
@@ -109,7 +111,7 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  static const String baseUrl2 = 'http://192.168.1.17:8000/api/clients/1';
+  static const String baseUrl2 = 'http://192.168.10.25:8000/api/clients/1';
 
   Future<void> fetchClient() async {
     final response = await http.get(Uri.parse('$baseUrl2'));
@@ -193,7 +195,7 @@ class _ProductsPageState extends State<ProductsPage> {
               SizedBox(height: 15),
               ListTile(
                 leading: Image.network(
-                  'http://192.168.1.17:8000/' + product.image,
+                  'http://192.168.10.25:8000/' + product.image,
                   width: 80.0,
                   height: 80.0,
                   fit: BoxFit.cover,
@@ -278,7 +280,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
 class ApiService {
   Future<void> addToCart(Product product) async {
-    final url = Uri.parse('http://192.168.1.17:8000/api/cart/add');
+    final url = Uri.parse('http://192.168.10.25:8000/api/cart/add');
     final body = jsonEncode({
       'productId': product.id,
       'productName': product.name,
@@ -298,7 +300,7 @@ class ApiService {
   }
 
   Future<void> removeFromCart(Product product) async {
-    final url = Uri.parse('http://192.168.1.17:8000/api/cart/remove');
+    final url = Uri.parse('http://192.168.10.25:8000/api/cart/remove');
     final body = jsonEncode({
       'productId': product.id,
       // Ajoutez d'autres champs nécessaires à votre endpoint
@@ -409,7 +411,7 @@ class _CartPageState extends State<CartPage> {
                   final product = widget.cart.products[index];
                   return ListTile(
                     leading: Image.network(
-                      'http://192.168.1.17:8000/' + product.image,
+                      'http://192.168.10.25:8000/' + product.image,
                       width: 80.0,
                       height: 80.0,
                       fit: BoxFit.cover,
@@ -471,7 +473,7 @@ class _CartPageState extends State<CartPage> {
                   if (!widget.cart.products.contains(product)) {
                     return ListTile(
                       leading: Image.network(
-                        'http://192.168.1.17:8000/' + product.image,
+                        'http://192.168.10.25:8000/' + product.image,
                         width: 80.0,
                         height: 80.0,
                         fit: BoxFit.cover,
@@ -570,7 +572,7 @@ class _DeliveryInfoPageState extends State<DeliveryInfoPage> {
     fetchClient();
   }
 
-  static const String baseUrl = 'http://192.168.1.17:8000/api/clients/1';
+  static const String baseUrl = 'http://192.168.10.25:8000/api/clients/1';
   var client;
   var paymentOption = '';
 
@@ -827,7 +829,7 @@ class _DeliveryInfoPageState extends State<DeliveryInfoPage> {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-    var baseUrl = 'http://192.168.1.17:8000/api/set-postion';
+    var baseUrl = 'http://192.168.10.25:8000/api/set-postion';
     var response = await http.post(
       Uri.parse(baseUrl),
       headers: <String, String>{
@@ -1011,9 +1013,48 @@ class OrderSummaryPage extends StatelessWidget {
       this.mobileMoneyInfo});
 
   var produits = [];
+  var reference =
+      'REF-' + (new DateTime.now().microsecondsSinceEpoch).toString();
+
+  function_paiement() async {
+    PaiementPro paiment_pro = new PaiementPro('PP-F324');
+
+    paiment_pro.amount = cart.getTotalPrice().toInt() + 1200;
+    paiment_pro.channel = 'MOMOCI';
+    paiment_pro.referenceNumber = reference;
+    reference = paiment_pro.referenceNumber;
+    paiment_pro.customerEmail = 'marketplace@gmail.com';
+    paiment_pro.customerFirstName = 'Market';
+    paiment_pro.customerLastname = 'Place';
+    paiment_pro.customerPhoneNumber = this.contactNumber;
+    paiment_pro.description = this.address;
+    paiment_pro.notificationURL =
+        'http://192.168.10.25:8000/api/return-paiementpro';
+    paiment_pro.returnURL = 'http://192.168.10.25:8000/api/return-paiementpro';
+
+    await paiment_pro.getUrlPayment();
+
+    if (paiment_pro.success) {
+      print(paiment_pro.url);
+
+      final Uri _url = Uri.parse(paiment_pro.url);
+
+      Future<void> _launchUrl() async {
+        if (!await launchUrl(_url)) {
+          throw 'Could not launch $_url';
+        }
+      }
+
+      // success open in browser
+      _launchUrl();
+    } else {
+      // error init
+      print(paiment_pro.message);
+    }
+  }
 
   Future<void> fetchCommande() async {
-    var baseUrl2 = 'http://192.168.1.17:8000/api/commandes';
+    var baseUrl2 = 'http://192.168.10.25:8000/api/commandes';
 
     final response = await http.post(Uri.parse(baseUrl2),
         headers: <String, String>{
@@ -1025,9 +1066,30 @@ class OrderSummaryPage extends StatelessWidget {
           'AdresseClient': address,
           'HeureLivraison': deliveryTime,
           'ModePaiement': paymentOption,
+          'reference': reference
         }));
 
-    print(response.body);
+    // print(response.body);
+
+    print(paymentOption);
+
+    if (paymentOption == 'en_ligne') {
+      function_paiement();
+    } else {
+      Fluttertoast.showToast(
+        msg:
+            'Votre commande a été enregistré avec succès merci pour votre confiance.                                ',
+        toastLength: Toast
+            .LENGTH_SHORT, // Duration for which the toast should be displayed
+        gravity:
+            ToastGravity.BOTTOM, // Position of the toast message on the screen
+        timeInSecForIosWeb:
+            1, // Specific to iOS/Web, the time for which the toast should be displayed
+        backgroundColor: Colors.black54, // Background color of the toast
+        textColor: Colors.white, // Text color of the toast
+        fontSize: 16.0, // Font size of the toast message
+      );
+    }
 
     // if (response.statusCode == 200) {
     //   // var data = jsonDecode(response.body);
@@ -1109,7 +1171,7 @@ class OrderSummaryPage extends StatelessWidget {
                   produits.add(product.id);
                   return ListTile(
                     leading: Image.network(
-                      'http://192.168.1.17:8000/' + product.image,
+                      'http://192.168.10.25:8000/' + product.image,
                       width: 80.0,
                       height: 80.0,
                       fit: BoxFit.cover,
