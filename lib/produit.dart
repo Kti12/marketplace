@@ -80,7 +80,7 @@ class _ProductsPageState extends State<ProductsPage> {
     fetchProducts();
   }
 
-  static const String baseUrl = 'http://192.168.10.25:8000/api/produits';
+  static const String baseUrl = 'http://192.168.1.138:8000/api/produits';
 
   Future<void> fetchProducts() async {
     final response = await http.get(Uri.parse('$baseUrl'));
@@ -111,7 +111,7 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  static const String baseUrl2 = 'http://192.168.10.25:8000/api/clients/1';
+  static const String baseUrl2 = 'http://192.168.1.138:8000/api/clients/1';
 
   Future<void> fetchClient() async {
     final response = await http.get(Uri.parse('$baseUrl2'));
@@ -195,7 +195,7 @@ class _ProductsPageState extends State<ProductsPage> {
               SizedBox(height: 15),
               ListTile(
                 leading: Image.network(
-                  'http://192.168.10.25:8000/' + product.image,
+                  'http://192.168.1.138:8000/' + product.image,
                   width: 80.0,
                   height: 80.0,
                   fit: BoxFit.cover,
@@ -280,7 +280,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
 class ApiService {
   Future<void> addToCart(Product product) async {
-    final url = Uri.parse('http://192.168.10.25:8000/api/cart/add');
+    final url = Uri.parse('http://192.168.1.138:8000/api/cart/add');
     final body = jsonEncode({
       'productId': product.id,
       'productName': product.name,
@@ -300,7 +300,7 @@ class ApiService {
   }
 
   Future<void> removeFromCart(Product product) async {
-    final url = Uri.parse('http://192.168.10.25:8000/api/cart/remove');
+    final url = Uri.parse('http://192.168.1.138:8000/api/cart/remove');
     final body = jsonEncode({
       'productId': product.id,
       // Ajoutez d'autres champs nécessaires à votre endpoint
@@ -411,7 +411,7 @@ class _CartPageState extends State<CartPage> {
                   final product = widget.cart.products[index];
                   return ListTile(
                     leading: Image.network(
-                      'http://192.168.10.25:8000/' + product.image,
+                      'http://192.168.1.138:8000/' + product.image,
                       width: 80.0,
                       height: 80.0,
                       fit: BoxFit.cover,
@@ -473,7 +473,7 @@ class _CartPageState extends State<CartPage> {
                   if (!widget.cart.products.contains(product)) {
                     return ListTile(
                       leading: Image.network(
-                        'http://192.168.10.25:8000/' + product.image,
+                        'http://192.168.1.138:8000/' + product.image,
                         width: 80.0,
                         height: 80.0,
                         fit: BoxFit.cover,
@@ -572,7 +572,7 @@ class _DeliveryInfoPageState extends State<DeliveryInfoPage> {
     fetchClient();
   }
 
-  static const String baseUrl = 'http://192.168.10.25:8000/api/clients/1';
+  static const String baseUrl = 'http://192.168.1.138:8000/api/clients/1';
   var client;
   var paymentOption = '';
 
@@ -829,7 +829,7 @@ class _DeliveryInfoPageState extends State<DeliveryInfoPage> {
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
-    var baseUrl = 'http://192.168.10.25:8000/api/set-postion';
+    var baseUrl = 'http://192.168.1.138:8000/api/set-postion';
     var response = await http.post(
       Uri.parse(baseUrl),
       headers: <String, String>{
@@ -1029,8 +1029,8 @@ class OrderSummaryPage extends StatelessWidget {
     paiment_pro.customerPhoneNumber = this.contactNumber;
     paiment_pro.description = this.address;
     paiment_pro.notificationURL =
-        'http://192.168.10.25:8000/api/return-paiementpro';
-    paiment_pro.returnURL = 'http://192.168.10.25:8000/api/return-paiementpro';
+        'http://192.168.1.138:8000/api/return-paiementpro';
+    paiment_pro.returnURL = 'http://192.168.1.138:8000/api/return-paiementpro';
 
     await paiment_pro.getUrlPayment();
 
@@ -1054,7 +1054,7 @@ class OrderSummaryPage extends StatelessWidget {
   }
 
   Future<void> fetchCommande() async {
-    var baseUrl2 = 'http://192.168.10.25:8000/api/commandes';
+    var baseUrl2 = 'http://192.168.1.138:8000/api/commandes';
 
     final response = await http.post(Uri.parse(baseUrl2),
         headers: <String, String>{
@@ -1171,7 +1171,7 @@ class OrderSummaryPage extends StatelessWidget {
                   produits.add(product.id);
                   return ListTile(
                     leading: Image.network(
-                      'http://192.168.10.25:8000/' + product.image,
+                      'http://192.168.1.138:8000/' + product.image,
                       width: 80.0,
                       height: 80.0,
                       fit: BoxFit.cover,
